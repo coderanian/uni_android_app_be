@@ -19,7 +19,7 @@ class LocationController(@Autowired private val locationRepository: LocationRepo
 
     @PostMapping("")
     fun createLocation(@RequestBody location: Location): ResponseEntity<Location> {
-        var loc_id: Long? = null;
+        var loc_id: Long? = null
         locationRepository.findAll().forEach {
 
             if (it.latitude.equals(location.latitude)) {
