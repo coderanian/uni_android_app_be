@@ -33,14 +33,35 @@ class UserController(
     @PutMapping("/{id}")
     fun updateUserById(@PathVariable("id") userId: Long, @RequestBody user: User): ResponseEntity<User> {
         val existingUser = userRepository.findById(userId).orElse(null)
-
         if (existingUser == null) {
             return ResponseEntity(HttpStatus.NOT_FOUND)
         }
         val updatedUser = existingUser.copy(
             name = user.name,
             email = user.email,
-            password = user.password)
+            password = user.password,
+            picture = user.picture
+        )
+        // TODO in Service auslagern
+        if (user.location != null) {
+
+            println(user)
+            this.updateUserLocationById(userId, user.location!!)
+        }
+        userRepository.save(updatedUser)
+        return ResponseEntity(updatedUser, HttpStatus.OK)
+    }
+
+    @PutMapping("/{id}/location")
+    fun updateUserLocationById(@PathVariable("id") userId: Long, @RequestBody location: Location): ResponseEntity<User> {
+        val updatedLocation = locationRepository.save(location)
+        val existingUser = userRepository.findById(userId).orElse(null)
+        if (existingUser == null) {
+            return ResponseEntity(HttpStatus.NOT_FOUND)
+        }
+        val updatedUser = existingUser.copy(
+            location = updatedLocation
+        )
         userRepository.save(updatedUser)
         return ResponseEntity(updatedUser, HttpStatus.OK)
     }

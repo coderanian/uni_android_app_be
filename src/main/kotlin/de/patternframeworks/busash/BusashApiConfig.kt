@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
 
+
 @Configuration
 @EnableWebSecurity
 class BusashApiConfig {
@@ -16,4 +17,5 @@ class BusashApiConfig {
                     .requestMatchers("/api/**")
         }
     }
+
 }

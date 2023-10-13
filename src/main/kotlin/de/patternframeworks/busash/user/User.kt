@@ -1,6 +1,7 @@
 package de.patternframeworks.busash.user
 
 import de.patternframeworks.busash.location.Location
+import de.patternframeworks.busash.offer.Offer
 import jakarta.persistence.*
 
 @Entity
@@ -8,7 +9,10 @@ import jakarta.persistence.*
 data class User(
         @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "id") val id: Long,
         @Column(name = "name") val name: String,
-        @Column(name = "email") val email: String,
+        @Column(name = "email", unique = true) val email: String,
         @Column(name = "password") val password: String,
-        @ManyToOne @JoinColumn(name = "location_id") var location: Location? = null
+        @Column(name = "picture") val picture: String? = "",
+        @Column(name = "transactions") val transactions: Int? = 0,
+        @ManyToOne @JoinColumn(name = "location_id") var location: Location? = null,
+        @OneToMany(mappedBy = "author", fetch = FetchType.EAGER) var offers: List<Offer>?
 )

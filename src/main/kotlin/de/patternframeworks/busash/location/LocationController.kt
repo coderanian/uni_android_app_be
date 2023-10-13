@@ -19,17 +19,17 @@ class LocationController(@Autowired private val locationRepository: LocationRepo
 
     @PostMapping("")
     fun createLocation(@RequestBody location: Location): ResponseEntity<Location> {
-        var loc_id: Long? = null
+        var locId: Long? = null
         locationRepository.findAll().forEach {
 
             if (it.latitude.equals(location.latitude)) {
                 if (it.longitude.equals(location.longitude)) {
-                    loc_id = it.location_id
+                    locId = it.locationId
                 }
             }
         }
-        if (loc_id != null) {
-            return getLocationById(loc_id!!)
+        if (locId != null) {
+            return getLocationById(locId!!)
         }
         val createdLocation = locationRepository.save(location)
         return ResponseEntity(createdLocation, HttpStatus.CREATED)
