@@ -1,11 +1,9 @@
 package de.patternframeworks.busash.user.web
 
-import de.patternframeworks.busash.dtos.RegisterDto
 import de.patternframeworks.busash.location.Location
 import de.patternframeworks.busash.location.LocationRepository
 import de.patternframeworks.busash.user.persistance.User
 import de.patternframeworks.busash.user.persistance.UserRepository
-import de.patternframeworks.busash.user.service.UserService
 import io.jsonwebtoken.Jwts
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/users")
 class UserController(
-    @Autowired private val userService: UserService,
     @Autowired private val userRepository: UserRepository,
     @Autowired private val locationRepository: LocationRepository
 ) {
