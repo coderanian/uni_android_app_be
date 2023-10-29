@@ -1,7 +1,7 @@
 package de.patternframeworks.busash.offer
 
-import de.patternframeworks.busash.user.User
-import jakarta.persistence.*
+import de.patternframeworks.busash.user.persistance.User
+import javax.persistence.*
 
 @Entity
 @Table(name = "offers")

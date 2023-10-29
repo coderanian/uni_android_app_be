@@ -1,6 +1,6 @@
 package de.patternframeworks.busash.location
 
-import jakarta.persistence.*
+import javax.persistence.*
 
 @Entity
 @Table(name = "locations")
