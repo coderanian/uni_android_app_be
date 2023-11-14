@@ -46,7 +46,6 @@ class ProfileController(
         val token = jwtTokenService.extractTokenFromPrefix(header)
         val userId = jwtTokenService.getUserIdFromToken(token)
         val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-
         //Prevent email from being not unique
         if (user.email != existingUser.email) {
             val emailExists = userRepository.findByEmail(user.email)
@@ -54,18 +53,18 @@ class ProfileController(
                 throw MainException("E-Mail already exists")
             }
         }
+        //Save new location only if provided by user, otherwise null
+        val updatedLocation = user.location?.let {
+            locationRepository.save(it)
+        }
         val updatedUser = existingUser.copy(
                 name = user.name,
                 email = user.email,
                 picture = user.picture,
                 password = user.password,
+                location = updatedLocation
         )
         userRepository.save(updatedUser)
-        if (user.location != null) {
-            val updatedLocation = locationRepository.save(user.location!!)
-            val updatedUser = existingUser.copy(location = updatedLocation)
-            userRepository.save(updatedUser)
-        }
         return ResponseEntity(updatedUser, HttpStatus.OK)
     }
 
