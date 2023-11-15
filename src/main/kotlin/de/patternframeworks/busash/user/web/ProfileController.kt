@@ -6,6 +6,7 @@ import de.patternframeworks.busash.location.LocationRepository
 import de.patternframeworks.busash.offer.OfferRepository
 import de.patternframeworks.busash.user.persistance.User
 import de.patternframeworks.busash.user.persistance.UserRepository
+import de.patternframeworks.busash.user.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,14 +18,21 @@ class ProfileController(
         @Autowired private val userRepository: UserRepository,
         private val jwtTokenService: JwtTokenService,
         private val locationRepository: LocationRepository,
-        private val offerRepository: OfferRepository
+        private val offerRepository: OfferRepository,
+        private val userService: UserService
 ) {
 
     @GetMapping("")
     fun getUserInformation(@RequestHeader(name = "Authorization") header: String): ResponseEntity<Any> {
         val token = jwtTokenService.extractTokenFromPrefix(header)
         val userId = jwtTokenService.getUserIdFromToken(token)
-        return ResponseEntity(userRepository.findById(userId), HttpStatus.OK)
+        val offerCnt = userService.getOfferCntByUser(userId)
+        val user = userRepository.findById(userId)
+        val response = mapOf(
+            "user" to user,
+            "offerCnt" to offerCnt
+        )
+        return ResponseEntity(response, HttpStatus.OK)
     }
 
     /**
