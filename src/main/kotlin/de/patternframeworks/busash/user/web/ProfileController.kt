@@ -68,7 +68,7 @@ class ProfileController(
         val updatedUser = existingUser.copy(
                 name = user.name,
                 email = user.email,
-                picture = user.picture,
+                picture = user.picture ?: existingUser.picture, //WHY IS IT RESET IF NOT PROVIDED IN PUT?
                 password = user.password,
                 location = updatedLocation ?: existingUser.location
         )

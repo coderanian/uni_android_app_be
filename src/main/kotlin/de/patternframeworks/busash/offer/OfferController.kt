@@ -16,11 +16,48 @@ class OfferController(
         private val userRepository: UserRepository,
         private val userService: UserService
 ) {
-
+    /**
+     * Endpoint to retrieve all offers EXCLUDING offers of authentificated user
+     * @param header Authorization header containing the user token
+     * @return List of offers
+     * @author Konstantin K.
+     */
     @GetMapping("")
-    fun getAllOffers(): List<Offer> =
-            offerRepository.findAll().toList()
+    fun getAllOffers(
+        @RequestHeader(name = "Authorization") header: String
+    ): List<Offer>{
+        val token = jwtTokenService.extractTokenFromPrefix(header)
+        val userId = jwtTokenService.getUserIdFromToken(token)
+        val allOffers = offerRepository.findAll().toList()
+        return allOffers.filter { it.author?.id != userId }
+    }
+    /**
+     * Endpoint to retrieve all offers of authentificated user
+     * @param header Authorization header containing the user token
+     * @return List of offers
+     * @author Konstantin K.
+     */
+    @GetMapping("/my-offers")
+    fun getAllMyOffers(
+        @RequestHeader(name = "Authorization") header: String
+    ): List<Offer>{
+        val token = jwtTokenService.extractTokenFromPrefix(header)
+        val userId = jwtTokenService.getUserIdFromToken(token)
+        return offerRepository.findAllByAuthorId(userId)
+    }
 
+    /**
+     * Endpoint to retrieve all offers of specified user
+     * @param header Authorization header containing the user token
+     * @return List of offers
+     * @author Konstantin K.
+     */
+    @GetMapping("/users/{userId}")
+    fun getAllMyOffers(
+        @PathVariable userId: Long,
+    ): List<Offer>{
+        return offerRepository.findAllByAuthorId(userId)
+    }
     /**
      * Endpoint to create new offer
      * @param header Authorization header containing the user token
@@ -101,7 +138,8 @@ class OfferController(
     @DeleteMapping("/{id}")
     fun deleteOffer(
         @RequestHeader(name = "Authorization") header: String,
-        @PathVariable id: Long
+        @PathVariable id: Long,
+        @RequestParam sold: Boolean
     ): ResponseEntity<Any> {
         val token = jwtTokenService.extractTokenFromPrefix(header)
         val userId = jwtTokenService.getUserIdFromToken(token)
@@ -111,8 +149,10 @@ class OfferController(
         if (offer == null || offer.author != existingUser) {
             return ResponseEntity(HttpStatus.NOT_FOUND)
         }
-        //Increment transactions counter of a user
-        userService.updateTransactionsCnt(existingUser)
+        //Increment transactions counter of a user if item is sold, otherwise simply delete
+        if(sold) {
+            userService.updateTransactionsCnt(existingUser)
+        }
         offerRepository.deleteById(id)
         return ResponseEntity("Offer deleted", HttpStatus.OK)
     }
