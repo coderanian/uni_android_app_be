@@ -1,5 +1,6 @@
 package de.patternframeworks.busash.user.persistance
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import de.patternframeworks.busash.location.Location
 import de.patternframeworks.busash.offer.Offer
 import org.hibernate.validator.constraints.Length
@@ -18,5 +19,7 @@ data class User(
         @ManyToOne(cascade = [CascadeType.ALL])
         @JoinColumn(name = "location_id")
         var location: Location? = null,
-        @OneToMany(mappedBy = "author", fetch = FetchType.EAGER) var offers: List<Offer>? = null
+        @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
+        @JsonIgnore
+        var offers: List<Offer>? = null
 )

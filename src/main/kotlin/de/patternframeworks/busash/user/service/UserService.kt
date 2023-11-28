@@ -8,4 +8,6 @@ interface UserService {
     fun saveUser(user: RegisterDto): User
    /* fun findByEmail(email: String): User?*/
     fun comparePassword(pw1: String, pw2: String): Boolean
+    fun updateTransactionsCnt(user: User)
+    fun getOfferCntByUser(userId: Long): Long
 }
