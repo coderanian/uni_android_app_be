@@ -5,4 +5,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface OfferRepository: CrudRepository<Offer, Long> {
+    fun countByAuthorId(authorId: Long): Long
 }
