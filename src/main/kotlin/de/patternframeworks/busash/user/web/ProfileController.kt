@@ -71,6 +71,7 @@ class ProfileController(
                 picture = user.picture ?: existingUser.picture, //WHY IS IT RESET IF NOT PROVIDED IN PUT?
                 password = user.password,
                 location = updatedLocation ?: existingUser.location
+
         )
         userRepository.save(updatedUser)
         return ResponseEntity(updatedUser, HttpStatus.OK)
