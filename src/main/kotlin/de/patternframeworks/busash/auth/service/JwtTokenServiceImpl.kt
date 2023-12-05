@@ -10,7 +10,7 @@ import java.util.*
 class JwtTokenServiceImpl(): JwtTokenService {
     override fun generateToken(userId: Long): String {
         val subject = userId.toString()
-        val expiration = Date(System.currentTimeMillis() + 60 * 48 * 1000) // 1day
+        val expiration = Date(System.currentTimeMillis() + 60 * 48 * 1000) // 2day
 
         return Jwts.builder()
             .setSubject(subject)
@@ -37,6 +37,10 @@ class JwtTokenServiceImpl(): JwtTokenService {
 
     override fun getExpirationDateFromToken(token: String): Date {
         return Jwts.parser().setSigningKey("secret").parseClaimsJws(token).body.expiration
+    }
+
+    override fun getUserIdFromHeader(token: String): Long {
+        return getUserIdFromToken(extractTokenFromPrefix(token))
     }
 
     fun isTokenExpired(token: String): Boolean {

@@ -9,4 +9,5 @@ interface JwtTokenService {
     fun extractTokenFromPrefix(token: String): String
     fun validateToken(token: String, userDetails: User): Boolean
     fun getExpirationDateFromToken(token: String): Date
+    fun getUserIdFromHeader(token: String): Long
 }

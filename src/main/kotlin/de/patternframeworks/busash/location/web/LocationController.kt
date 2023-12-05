@@ -1,5 +1,7 @@
-package de.patternframeworks.busash.location
+package de.patternframeworks.busash.location.web
 
+import de.patternframeworks.busash.location.persistance.Location
+import de.patternframeworks.busash.location.persistance.LocationRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

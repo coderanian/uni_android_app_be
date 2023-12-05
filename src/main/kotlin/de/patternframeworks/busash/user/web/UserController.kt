@@ -1,7 +1,7 @@
 package de.patternframeworks.busash.user.web
 
-import de.patternframeworks.busash.location.Location
-import de.patternframeworks.busash.location.LocationRepository
+import de.patternframeworks.busash.location.persistance.Location
+import de.patternframeworks.busash.location.persistance.LocationRepository
 import de.patternframeworks.busash.user.persistance.User
 import de.patternframeworks.busash.user.persistance.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
