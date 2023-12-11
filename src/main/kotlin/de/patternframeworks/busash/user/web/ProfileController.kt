@@ -6,7 +6,6 @@ import de.patternframeworks.busash.error.MainException
 import de.patternframeworks.busash.location.persistance.LocationRepository
 import de.patternframeworks.busash.user.persistance.UserRepository
 import de.patternframeworks.busash.user.service.UserMapper
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/my-profile")
 class ProfileController(
-    @Autowired private val userRepository: UserRepository,
+    private val userRepository: UserRepository,
     private val jwtTokenService: JwtTokenService,
     private val locationRepository: LocationRepository,
     private val userMapper: UserMapper

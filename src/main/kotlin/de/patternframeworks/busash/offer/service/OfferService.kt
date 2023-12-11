@@ -1,0 +1,10 @@
+package de.patternframeworks.busash.offer.service
+
+import de.patternframeworks.busash.offer.persistance.Offer
+import de.patternframeworks.busash.offer.persistance.Reservation
+
+interface OfferService {
+    fun isOfferReserved(offer: Offer): Boolean
+
+    fun isReservationActive(reservation: Reservation): Boolean
+}

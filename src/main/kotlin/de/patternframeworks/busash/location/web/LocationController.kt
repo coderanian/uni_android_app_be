@@ -2,7 +2,6 @@ package de.patternframeworks.busash.location.web
 
 import de.patternframeworks.busash.location.persistance.Location
 import de.patternframeworks.busash.location.persistance.LocationRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/locations")
-class LocationController(@Autowired private val locationRepository: LocationRepository) {
+class LocationController(private val locationRepository: LocationRepository) {
     @GetMapping("")
     fun getAllLocations(): List<Location> =
         locationRepository.findAll().toList()

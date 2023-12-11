@@ -1,13 +1,12 @@
 package de.patternframeworks.busash.offer.web
 
 import de.patternframeworks.busash.auth.service.JwtTokenService
-import de.patternframeworks.busash.dtos.ReservationDto
 import de.patternframeworks.busash.offer.persistance.OfferRepository
 import de.patternframeworks.busash.offer.persistance.Reservation
 import de.patternframeworks.busash.offer.persistance.ReservationRepository
 import de.patternframeworks.busash.offer.service.OfferMapper
+import de.patternframeworks.busash.offer.service.OfferService
 import de.patternframeworks.busash.user.persistance.UserRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -16,11 +15,12 @@ import java.time.OffsetDateTime
 @RestController
 @RequestMapping("/api/reservations")
 class ReservationController(
-    @Autowired private val offerRepository: OfferRepository,
-    @Autowired private val reservationRepository: ReservationRepository,
-    @Autowired private val userRepository: UserRepository,
+    private val offerRepository: OfferRepository,
+    private val reservationRepository: ReservationRepository,
+    private val userRepository: UserRepository,
     private val jwtTokenService: JwtTokenService,
-    private val offerMapper: OfferMapper
+    private val offerMapper: OfferMapper,
+    private val offerService: OfferService
 ) {
     /**
      * Endpoint to retrieve all reserved offers of authenticated user
@@ -31,11 +31,14 @@ class ReservationController(
     @GetMapping("")
     fun getAllReservedOffers(
         @RequestHeader(name = "Authorization") header: String
-    ): ResponseEntity<List<ReservationDto>>{
+    ): Any {
         val userId = jwtTokenService.getUserIdFromHeader(header)
         val resById = reservationRepository.findAllByReservedId(userId).toList()
+
         val myReservations = resById
+            .filter { offerService.isReservationActive(it) }
             .map { offerMapper.reservationToReservationDto(it) }
+
         return ResponseEntity(myReservations, HttpStatus.OK)
     }
     /**
@@ -53,13 +56,17 @@ class ReservationController(
         val userId = jwtTokenService.getUserIdFromHeader(header)
         val user = userRepository.findById(userId).orElse(null)
         val offer = offerRepository.findById(id).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        //Don't allow to reserve your own items or items already reserved by a user
-        if (offer.author?.id == userId && user != null) {
+        //Don't allow to reserve your own items
+        if (offer.author.id == userId && user != null) {
             return ResponseEntity(HttpStatus.FORBIDDEN)
         }
+        // items already reserved by a user
+        if (offerService.isOfferReserved(offer)) {
+            return ResponseEntity("Offer is already reserved", HttpStatus.FORBIDDEN)
+        }
         val timestamp = OffsetDateTime.now().plusHours(1)
-        val newReservation = reservationRepository.save(Reservation(null, offer, user, timestamp))
-        return ResponseEntity(offerMapper.reservationToReservationDto(newReservation), HttpStatus.OK)
+        reservationRepository.save(Reservation(null, offer, user, timestamp))
+        return ResponseEntity(timestamp, HttpStatus.OK)
     }
 
     /**
@@ -83,7 +90,7 @@ class ReservationController(
 
         val updatedReservation = reservation.copy(
             reservationId = reservation.reservationId,
-            offer = reservation.offer,
+            item = reservation.item,
             reserved = reservation.reserved,
             reservationTimestamp = OffsetDateTime.now()
         )

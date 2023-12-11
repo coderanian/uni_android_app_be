@@ -5,9 +5,9 @@ import de.patternframeworks.busash.dtos.OfferDto
 import de.patternframeworks.busash.offer.persistance.Offer
 import de.patternframeworks.busash.offer.persistance.OfferRepository
 import de.patternframeworks.busash.offer.service.OfferMapper
+import de.patternframeworks.busash.offer.service.OfferService
 import de.patternframeworks.busash.user.persistance.UserRepository
 import de.patternframeworks.busash.user.service.UserService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -15,11 +15,12 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/offers")
 class OfferController(
-    @Autowired private val offerRepository: OfferRepository,
+    private val offerRepository: OfferRepository,
     private val jwtTokenService: JwtTokenService,
     private val userRepository: UserRepository,
     private val userService: UserService,
-    private val offerMapper: OfferMapper
+    private val offerMapper: OfferMapper,
+    private val offerService: OfferService
 ) {
     /**
      * Endpoint to retrieve all offers EXCLUDING offers of authentificated user or RESERVED
@@ -33,9 +34,7 @@ class OfferController(
     ): List<OfferDto>{
         val userId = jwtTokenService.getUserIdFromHeader(header)
         val allOffers = offerRepository.findAll().toList()
-        // TODO: Reservierte Elemente rausfiltern
-        // return allOffers.filter { it.author?.id != userId && it.reservedBy == null}
-        return allOffers.filter { it.author?.id != userId}.map { offerMapper.offerToOfferDto(it) }
+        return allOffers.filter { it.author.id != userId}.filter { !offerService.isOfferReserved(it) }.map { offerMapper.offerToOfferDto(it) }
     }
     /**
      * Endpoint to retrieve all offers of authentificated user
@@ -70,7 +69,7 @@ class OfferController(
         val userOffers = offerRepository.findAllByAuthorId(userId)
         // TODO: Reservierte Elemente rausfiltern
         // return userOffers.filter { it.reservedBy == null }
-        return userOffers
+        return userOffers.filter { !offerService.isOfferReserved(it) }
     }
 
     /**
@@ -162,7 +161,7 @@ class OfferController(
             return ResponseEntity(HttpStatus.NOT_FOUND)
         }
         //Increment transactions counter of a user if item is sold, otherwise simply delete
-        if(sold) {
+        if (sold) {
             userService.updateTransactionsCnt(existingUser)
         }
         offerRepository.deleteById(id)

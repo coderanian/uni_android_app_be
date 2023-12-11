@@ -18,6 +18,6 @@ data class Offer(
     @Enumerated(EnumType.STRING) @Column(name = "price_type") val priceType: PriceType,
     @Column(name = "price") val price: String,
     @Column(name ="product_pic", length = 15000) @Length(max = 15000) val productPic: String? = "",
-    @ManyToOne @JoinColumn(name = "author_id") var author: User?,
-    @OneToMany(mappedBy = "offer") val reservations: List<Reservation>?
+    @ManyToOne @JoinColumn(name = "author_id") var author: User,
+    @OneToMany(mappedBy = "item") val reservations: List<Reservation>
 )
