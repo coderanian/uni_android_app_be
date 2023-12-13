@@ -1,4 +1,4 @@
-package de.patternframeworks.busash.dtos
+package de.patternframeworks.busash.model
 
 import de.patternframeworks.busash.offer.OfferCategory
 import de.patternframeworks.busash.offer.PriceType

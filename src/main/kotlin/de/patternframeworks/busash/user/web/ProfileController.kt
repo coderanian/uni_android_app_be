@@ -1,7 +1,7 @@
 package de.patternframeworks.busash.user.web
 
 import de.patternframeworks.busash.auth.service.JwtTokenService
-import de.patternframeworks.busash.dtos.ProfileDto
+import de.patternframeworks.busash.model.ProfileDto
 import de.patternframeworks.busash.error.MainException
 import de.patternframeworks.busash.location.persistance.LocationRepository
 import de.patternframeworks.busash.user.persistance.UserRepository

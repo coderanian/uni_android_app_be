@@ -1,8 +1,8 @@
 package de.patternframeworks.busash.user.service
 
-import de.patternframeworks.busash.dtos.AuthorDto
-import de.patternframeworks.busash.dtos.ProfileDto
-import de.patternframeworks.busash.dtos.RegisterDto
+import de.patternframeworks.busash.model.AuthorDto
+import de.patternframeworks.busash.model.ProfileDto
+import de.patternframeworks.busash.model.RegisterDto
 import de.patternframeworks.busash.user.persistance.User
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping

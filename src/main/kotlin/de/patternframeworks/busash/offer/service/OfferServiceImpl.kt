@@ -18,4 +18,11 @@ class OfferServiceImpl : OfferService {
     override fun isReservationActive(reservation: Reservation): Boolean {
         return reservation.reservationTimestamp > OffsetDateTime.now()
     }
+
+    override fun getReservationEndpoint(offer: Offer): String? {
+        if (offer.reservations.isEmpty() || offer.reservations.last().reservationTimestamp < OffsetDateTime.now()) {
+            return null
+        }
+        return offer.reservations.last().reservationTimestamp.toString()
+    }
 }

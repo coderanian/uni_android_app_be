@@ -1,8 +1,8 @@
 package de.patternframeworks.busash.auth.service
 
-import de.patternframeworks.busash.dtos.AuthInfoDto
-import de.patternframeworks.busash.dtos.LoginDto
-import de.patternframeworks.busash.dtos.RegisterDto
+import de.patternframeworks.busash.model.AuthInfoDto
+import de.patternframeworks.busash.model.LoginDto
+import de.patternframeworks.busash.model.RegisterDto
 
 interface AuthenticationService {
     fun authenticateUser(loginDto: LoginDto): AuthInfoDto

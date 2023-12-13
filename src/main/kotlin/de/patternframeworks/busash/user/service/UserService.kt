@@ -1,6 +1,6 @@
 package de.patternframeworks.busash.user.service
 
-import de.patternframeworks.busash.dtos.RegisterDto
+import de.patternframeworks.busash.model.RegisterDto
 import de.patternframeworks.busash.user.persistance.User
 
 interface UserService {

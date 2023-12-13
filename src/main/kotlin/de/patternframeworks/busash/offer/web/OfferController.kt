@@ -1,7 +1,8 @@
 package de.patternframeworks.busash.offer.web
 
 import de.patternframeworks.busash.auth.service.JwtTokenService
-import de.patternframeworks.busash.dtos.OfferDto
+import de.patternframeworks.busash.model.MyOfferDto
+import de.patternframeworks.busash.model.OfferDto
 import de.patternframeworks.busash.offer.persistance.Offer
 import de.patternframeworks.busash.offer.persistance.OfferRepository
 import de.patternframeworks.busash.offer.service.OfferMapper
@@ -45,14 +46,17 @@ class OfferController(
     @GetMapping("/my-offers")
     fun getAllMyOffers(
         @RequestHeader(name = "Authorization") header: String
-    ): ResponseEntity<List<Offer>>{
+    ): ResponseEntity<List<MyOfferDto>>{
         val userId = jwtTokenService.getUserIdFromHeader(header)
         val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         //Prevent user to create offers if no location has been set in the profile
         if(existingUser.location == null){
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
-        val myOffers = offerRepository.findAllByAuthorId(userId)
+        val myOffers = offerRepository.findAllByAuthorId(userId).toList().map {
+            offerMapper.offerToMyOfferDto(it, offerService.getReservationEndpoint(it))
+        }
+      //  System.out.println(myOffers.get(0).reservations.last().reservationTimestamp)
         return ResponseEntity(myOffers, HttpStatus.OK)
     }
 

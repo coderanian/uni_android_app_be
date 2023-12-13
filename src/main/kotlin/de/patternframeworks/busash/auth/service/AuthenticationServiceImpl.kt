@@ -1,8 +1,8 @@
 package de.patternframeworks.busash.auth.service
 
-import de.patternframeworks.busash.dtos.AuthInfoDto
-import de.patternframeworks.busash.dtos.LoginDto
-import de.patternframeworks.busash.dtos.RegisterDto
+import de.patternframeworks.busash.model.AuthInfoDto
+import de.patternframeworks.busash.model.LoginDto
+import de.patternframeworks.busash.model.RegisterDto
 import de.patternframeworks.busash.error.MainException
 import de.patternframeworks.busash.user.service.UserMapper
 import de.patternframeworks.busash.user.persistance.UserRepository
