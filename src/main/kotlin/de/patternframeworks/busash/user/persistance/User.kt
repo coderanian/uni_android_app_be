@@ -3,7 +3,7 @@ package de.patternframeworks.busash.user.persistance
 import com.fasterxml.jackson.annotation.JsonIgnore
 import de.patternframeworks.busash.location.persistance.Location
 import de.patternframeworks.busash.offer.persistance.Offer
-import de.patternframeworks.busash.offer.persistance.Reservation
+import de.patternframeworks.busash.reservation.persistance.Reservation
 import org.hibernate.validator.constraints.Length
 import javax.persistence.*
 

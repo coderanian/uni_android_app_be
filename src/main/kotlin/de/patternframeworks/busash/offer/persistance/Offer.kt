@@ -2,6 +2,7 @@ package de.patternframeworks.busash.offer.persistance
 
 import de.patternframeworks.busash.offer.OfferCategory
 import de.patternframeworks.busash.offer.PriceType
+import de.patternframeworks.busash.reservation.persistance.Reservation
 import de.patternframeworks.busash.user.persistance.User
 import org.hibernate.validator.constraints.Length
 import javax.persistence.*

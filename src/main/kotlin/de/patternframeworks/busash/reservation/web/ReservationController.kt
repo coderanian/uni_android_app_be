@@ -1,11 +1,11 @@
-package de.patternframeworks.busash.offer.web
+package de.patternframeworks.busash.reservation.web
 
 import de.patternframeworks.busash.auth.service.JwtTokenService
 import de.patternframeworks.busash.offer.persistance.OfferRepository
-import de.patternframeworks.busash.offer.persistance.Reservation
-import de.patternframeworks.busash.offer.persistance.ReservationRepository
-import de.patternframeworks.busash.offer.service.OfferMapper
+import de.patternframeworks.busash.reservation.persistance.Reservation
+import de.patternframeworks.busash.reservation.persistance.ReservationRepository
 import de.patternframeworks.busash.offer.service.OfferService
+import de.patternframeworks.busash.reservation.service.ReservationMapper
 import de.patternframeworks.busash.user.persistance.UserRepository
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,7 +19,7 @@ class ReservationController(
     private val reservationRepository: ReservationRepository,
     private val userRepository: UserRepository,
     private val jwtTokenService: JwtTokenService,
-    private val offerMapper: OfferMapper,
+    private val reservationMapper: ReservationMapper,
     private val offerService: OfferService
 ) {
     /**
@@ -37,7 +37,7 @@ class ReservationController(
 
         val myReservations = resById
             .filter { offerService.isReservationActive(it) }
-            .map { offerMapper.reservationToReservationDto(it) }
+            .map { reservationMapper.reservationToReservationDto(it) }
 
         return ResponseEntity(myReservations, HttpStatus.OK)
     }

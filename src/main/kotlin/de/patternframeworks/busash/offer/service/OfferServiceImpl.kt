@@ -1,7 +1,7 @@
 package de.patternframeworks.busash.offer.service
 
 import de.patternframeworks.busash.offer.persistance.Offer
-import de.patternframeworks.busash.offer.persistance.Reservation
+import de.patternframeworks.busash.reservation.persistance.Reservation
 import org.springframework.stereotype.Service
 import java.time.OffsetDateTime
 

@@ -1,5 +1,6 @@
-package de.patternframeworks.busash.offer.persistance
+package de.patternframeworks.busash.reservation.persistance
 
+import de.patternframeworks.busash.offer.persistance.Offer
 import de.patternframeworks.busash.user.persistance.User
 import java.time.OffsetDateTime
 import javax.persistence.*
