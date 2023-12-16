@@ -1,10 +1,7 @@
 package de.patternframeworks.busash.reservation.service
 
-import de.patternframeworks.busash.model.AuthorDto
 import de.patternframeworks.busash.model.OfferDto
 import de.patternframeworks.busash.model.ReservationDto
-import de.patternframeworks.busash.offer.OfferCategory
-import de.patternframeworks.busash.offer.PriceType
 import de.patternframeworks.busash.offer.service.OfferMapper
 import de.patternframeworks.busash.reservation.persistance.Reservation
 import org.mapstruct.*

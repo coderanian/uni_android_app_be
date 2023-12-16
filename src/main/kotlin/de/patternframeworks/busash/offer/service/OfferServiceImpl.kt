@@ -7,8 +7,6 @@ import de.patternframeworks.busash.offer.persistance.Offer
 import de.patternframeworks.busash.offer.persistance.OfferRepository
 import de.patternframeworks.busash.reservation.persistance.Reservation
 import de.patternframeworks.busash.user.service.UserService
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.time.OffsetDateTime
 import java.util.*

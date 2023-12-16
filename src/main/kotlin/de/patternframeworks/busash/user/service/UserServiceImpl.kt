@@ -4,11 +4,8 @@ import de.patternframeworks.busash.error.MainException
 import de.patternframeworks.busash.location.service.LocationService
 import de.patternframeworks.busash.model.ProfileDto
 import de.patternframeworks.busash.model.RegisterDto
-import de.patternframeworks.busash.offer.persistance.OfferRepository
 import de.patternframeworks.busash.user.persistance.User
 import de.patternframeworks.busash.user.persistance.UserRepository
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.*
