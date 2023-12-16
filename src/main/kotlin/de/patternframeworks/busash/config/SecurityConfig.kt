@@ -1,6 +1,6 @@
 package de.patternframeworks.busash.config
 
-import de.patternframeworks.busash.auth.web.JwtRequestFilter
+import de.patternframeworks.busash.auth.filter.JwtRequestFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity

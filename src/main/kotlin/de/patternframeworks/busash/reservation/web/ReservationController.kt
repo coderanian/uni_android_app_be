@@ -1,26 +1,18 @@
 package de.patternframeworks.busash.reservation.web
 
 import de.patternframeworks.busash.auth.service.JwtTokenService
-import de.patternframeworks.busash.offer.persistance.OfferRepository
-import de.patternframeworks.busash.reservation.persistance.Reservation
-import de.patternframeworks.busash.reservation.persistance.ReservationRepository
-import de.patternframeworks.busash.offer.service.OfferService
-import de.patternframeworks.busash.reservation.service.ReservationMapper
-import de.patternframeworks.busash.user.persistance.UserRepository
+import de.patternframeworks.busash.error.MainException
+import de.patternframeworks.busash.model.OfferDto
+import de.patternframeworks.busash.reservation.service.ReservationService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.OffsetDateTime
 
 @RestController
 @RequestMapping("/api/reservations")
 class ReservationController(
-    private val offerRepository: OfferRepository,
-    private val reservationRepository: ReservationRepository,
-    private val userRepository: UserRepository,
     private val jwtTokenService: JwtTokenService,
-    private val reservationMapper: ReservationMapper,
-    private val offerService: OfferService
+    private val reservationService: ReservationService
 ) {
     /**
      * Endpoint to retrieve all reserved offers of authenticated user
@@ -31,15 +23,9 @@ class ReservationController(
     @GetMapping("")
     fun getAllReservedOffers(
         @RequestHeader(name = "Authorization") header: String
-    ): Any {
+    ): ResponseEntity<List<OfferDto>> {
         val userId = jwtTokenService.getUserIdFromHeader(header)
-        val resById = reservationRepository.findAllByReservedId(userId).toList()
-
-        val myReservations = resById
-            .filter { offerService.isReservationActive(it) }
-            .map { reservationMapper.reservationToReservationDto(it) }
-
-        return ResponseEntity(myReservations, HttpStatus.OK)
+        return ResponseEntity.ok(reservationService.getReservedOffers(userId))
     }
     /**
      * Endpoint to reserve offer
@@ -54,19 +40,11 @@ class ReservationController(
         @PathVariable id: Long,
     ): ResponseEntity<Any> {
         val userId = jwtTokenService.getUserIdFromHeader(header)
-        val user = userRepository.findById(userId).orElse(null)
-        val offer = offerRepository.findById(id).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        //Don't allow to reserve your own items
-        if (offer.author.id == userId && user != null) {
-            return ResponseEntity(HttpStatus.FORBIDDEN)
+        return try {
+            ResponseEntity.ok(reservationService.reserveOffer(userId, id))
+        } catch (e: MainException) {
+            ResponseEntity(e, HttpStatus.NOT_ACCEPTABLE)
         }
-        // items already reserved by a user
-        if (offerService.isOfferReserved(offer)) {
-            return ResponseEntity("Offer is already reserved", HttpStatus.FORBIDDEN)
-        }
-        val timestamp = OffsetDateTime.now().plusHours(1)
-        reservationRepository.save(Reservation(null, offer, user, timestamp))
-        return ResponseEntity(timestamp, HttpStatus.OK)
     }
 
     /**
@@ -82,20 +60,11 @@ class ReservationController(
         @PathVariable id: Long,
     ): ResponseEntity<Any> {
         val userId = jwtTokenService.getUserIdFromHeader(header)
-        val reservation = reservationRepository.findById(id).orElse(null)
-
-        if (reservation.reserved.id != userId) {
-            return ResponseEntity(HttpStatus.FORBIDDEN)
+        return try {
+            ResponseEntity.ok(reservationService.cancelReservation(userId, id))
+        } catch (e: MainException) {
+            ResponseEntity(e, HttpStatus.NOT_ACCEPTABLE)
         }
-
-        val updatedReservation = reservation.copy(
-            reservationId = reservation.reservationId,
-            item = reservation.item,
-            reserved = reservation.reserved,
-            reservationTimestamp = OffsetDateTime.now()
-        )
-        reservationRepository.save(updatedReservation)
-        return ResponseEntity(null, HttpStatus.OK)
 
     }
 }
