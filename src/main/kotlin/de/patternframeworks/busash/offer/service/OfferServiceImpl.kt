@@ -1,6 +1,8 @@
 package de.patternframeworks.busash.offer.service
 
 import de.patternframeworks.busash.error.MainException
+import de.patternframeworks.busash.location.service.LocationService
+import de.patternframeworks.busash.model.LocationDto
 import de.patternframeworks.busash.model.MyOfferDto
 import de.patternframeworks.busash.model.OfferDto
 import de.patternframeworks.busash.offer.persistance.Offer
@@ -15,13 +17,13 @@ import java.util.*
 class OfferServiceImpl(
     private val offerRepository: OfferRepository,
     private val offerMapper: OfferMapper,
-    private val userService: UserService
+    private val userService: UserService,
+    private val locationService: LocationService
 ): OfferService {
-    override fun getSearchViewOffers(userId: Long): List<OfferDto> {
-        val allOffers = offerRepository.findAll().toList()
-        return allOffers.filter {it.author.id != userId }.filter { !isOfferReserved(it) }.map(offerMapper::offerToOfferDto)
+    override fun getSearchViewOffers(userId: Long, currentLocation: LocationDto, radius: Double): List<OfferDto> {
+        val allOffers = offerRepository.findAll()
+        return allOffers.filter {distanceFilter(it, currentLocation, radius)}.filter {it.author.id != userId }.filter { !isOfferReserved(it) }.map(offerMapper::offerToOfferDto)
     }
-
     override fun getMyOffers(userId: Long): List<MyOfferDto> {
         val profile = userService.getProfileInformation(userId)
         //Prevent user to create offers if no location has been set in the profile
@@ -96,5 +98,11 @@ class OfferServiceImpl(
             return null
         }
         return offer.reservations.last().reservationTimestamp.toString()
+    }
+
+    override fun distanceFilter(offer: Offer, currentLocation: LocationDto, radius: Double): Boolean {
+        val offerLocation = offer.author.location ?: throw MainException("Location not found")
+        val distance = locationService.calculateDistance(offerLocation.latitude, offerLocation.longitude, currentLocation.latitude, currentLocation.longitude)
+        return distance <= radius
     }
 }

@@ -21,5 +21,6 @@ interface ReservationMapper {
     @Mapping(target = "productPic", source = "item.productPic")
     @Mapping(target = "author", source = "item.author")
     @Mapping(target = "reservation", expression = "java(reservationToReservationDto(reservation))")
+    @Mapping(target = "location", source = "item.author.location")
     fun reservationToOfferDto(reservation: Reservation): OfferDto
 }

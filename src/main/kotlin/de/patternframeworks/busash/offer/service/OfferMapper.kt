@@ -10,6 +10,7 @@ import org.mapstruct.*
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [UserMapper::class])
 interface OfferMapper {
 
+    @Mapping(target = "location", source = "author.location")
     fun offerToOfferDto(offer: Offer): OfferDto
 
     @Mapping(target = "reservationEnd", source = "resend")

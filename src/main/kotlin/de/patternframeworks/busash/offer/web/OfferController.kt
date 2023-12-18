@@ -2,6 +2,7 @@ package de.patternframeworks.busash.offer.web
 
 import de.patternframeworks.busash.auth.service.JwtTokenService
 import de.patternframeworks.busash.error.MainException
+import de.patternframeworks.busash.model.LocationDto
 import de.patternframeworks.busash.model.MyOfferDto
 import de.patternframeworks.busash.model.OfferDto
 import de.patternframeworks.busash.offer.persistance.Offer
@@ -24,10 +25,14 @@ class OfferController(
      */
     @GetMapping("")
     fun getAllOffers(
-        @RequestHeader(name = "Authorization") header: String
+        @RequestHeader(name = "Authorization") header: String,
+        @RequestParam("lat") latitude: Double,
+        @RequestParam("lon") longitude: Double,
+        @RequestParam("radius") radius: Double?
     ): ResponseEntity<List<OfferDto>>{
         val userId = jwtTokenService.getUserIdFromHeader(header)
-        return ResponseEntity.ok(offerService.getSearchViewOffers(userId))
+        val rad = radius ?: 1.0
+        return ResponseEntity.ok(offerService.getSearchViewOffers(userId, LocationDto(latitude, longitude), rad))
     }
     /**
      * Endpoint to retrieve all offers of authentificated user
