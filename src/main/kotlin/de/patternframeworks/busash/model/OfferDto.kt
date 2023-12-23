@@ -14,5 +14,5 @@ class OfferDto(
     val productPic: String?,
     val author: AuthorDto?,
     val reservation: ReservationDto?,
-    val location: LocationDto
+    val location: LocationDto?
 )

@@ -40,7 +40,7 @@ class OfferServiceImpl(
     }
 
     override fun createOffer(userId: Long, offerDto: OfferDto): Offer {
-        val profile = userService.getProfileInformation(userId)
+        val profile = userService.getUserById(userId).orElse(null) ?: throw MainException("User not found")
         return offerRepository.save(offerMapper.offerDtoToOffer(offerDto, profile))
     }
 
