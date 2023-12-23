@@ -6,7 +6,7 @@ import de.patternframeworks.busash.offer.PriceType
 class MyOfferDto(
      val offerId: Long,
      val title: String,
-     val description: String,
+     val description: String?,
      val category: OfferCategory,
      val quantity: String,
      val priceType: PriceType,
