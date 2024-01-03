@@ -6,7 +6,7 @@ import de.patternframeworks.busash.reservation.persistance.Reservation
 import java.util.*
 
 interface OfferService {
-    fun getSearchViewOffers(userId: Long, currentLocation: LocationDto, radius: Double): List<OfferDto>
+    fun getSearchViewOffers(userId: Long, currentLocation: LocationDto, radius: Double, categories: String?, types: String?): List<OfferDto>
     fun getMyOffers(userId: Long): List<MyOfferDto>
     fun getOffersFromUser(userId: Long): List<OfferDto>
     fun createOffer(userId: Long, offerDto: OfferDto): Offer
@@ -17,4 +17,6 @@ interface OfferService {
     fun isReservationActive(reservation: Reservation): Boolean
     fun getReservationEndpoint(offer: Offer): String?
     fun distanceFilter(offer: Offer, currentLocation: LocationDto, radius: Double): Boolean
+    fun filterForCategories(offerList: List<Offer>, categories: String?): List<Offer>
+    fun filterForPriceTypes(offerList: List<Offer>, types: String?): List<Offer>
 }

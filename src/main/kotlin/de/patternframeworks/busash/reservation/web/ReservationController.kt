@@ -22,10 +22,12 @@ class ReservationController(
      */
     @GetMapping("")
     fun getAllReservedOffers(
-        @RequestHeader(name = "Authorization") header: String
+        @RequestHeader(name = "Authorization") header: String,
+        @RequestParam("cat") cat: String?,
+        @RequestParam("typ") typ: String?
     ): ResponseEntity<List<OfferDto>> {
         val userId = jwtTokenService.getUserIdFromHeader(header)
-        return ResponseEntity.ok(reservationService.getReservedOffers(userId))
+        return ResponseEntity.ok(reservationService.getReservedOffers(userId, cat, typ))
     }
     /**
      * Endpoint to reserve offer

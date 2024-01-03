@@ -28,11 +28,13 @@ class OfferController(
         @RequestHeader(name = "Authorization") header: String,
         @RequestParam("lat") latitude: Double,
         @RequestParam("lon") longitude: Double,
-        @RequestParam("radius") radius: Double?
+        @RequestParam("radius") radius: Double?,
+        @RequestParam("cat") cat: String?,
+        @RequestParam("typ") typ: String?
     ): ResponseEntity<List<OfferDto>>{
         val userId = jwtTokenService.getUserIdFromHeader(header)
         val rad = radius ?: 1.0
-        return ResponseEntity.ok(offerService.getSearchViewOffers(userId, LocationDto(latitude, longitude), rad))
+        return ResponseEntity.ok(offerService.getSearchViewOffers(userId, LocationDto(latitude, longitude), rad, cat, typ))
     }
     /**
      * Endpoint to retrieve all offers of authentificated user

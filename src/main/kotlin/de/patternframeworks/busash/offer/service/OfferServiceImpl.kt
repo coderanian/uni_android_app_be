@@ -5,6 +5,8 @@ import de.patternframeworks.busash.location.service.LocationService
 import de.patternframeworks.busash.model.LocationDto
 import de.patternframeworks.busash.model.MyOfferDto
 import de.patternframeworks.busash.model.OfferDto
+import de.patternframeworks.busash.offer.OfferCategory
+import de.patternframeworks.busash.offer.PriceType
 import de.patternframeworks.busash.offer.persistance.Offer
 import de.patternframeworks.busash.offer.persistance.OfferRepository
 import de.patternframeworks.busash.reservation.persistance.Reservation
@@ -20,9 +22,17 @@ class OfferServiceImpl(
     private val userService: UserService,
     private val locationService: LocationService
 ): OfferService {
-    override fun getSearchViewOffers(userId: Long, currentLocation: LocationDto, radius: Double): List<OfferDto> {
+    override fun getSearchViewOffers(userId: Long, currentLocation: LocationDto, radius: Double, categories: String?, types: String?): List<OfferDto> {
         val allOffers = offerRepository.findAll()
-        return allOffers.filter {distanceFilter(it, currentLocation, radius)}.filter {it.author.id != userId }.filter { !isOfferReserved(it) }.map(offerMapper::offerToOfferDto)
+        var filteredOffers = allOffers.filter { offer ->
+                offer.author.id != userId &&
+                !isOfferReserved(offer) &&
+                distanceFilter(offer, currentLocation, radius)
+            }
+        filteredOffers = filterForCategories(filteredOffers, categories)
+        filteredOffers = filterForPriceTypes(filteredOffers, types)
+
+        return  filteredOffers.map(offerMapper::offerToOfferDto).toList()
     }
     override fun getMyOffers(userId: Long): List<MyOfferDto> {
         val profile = userService.getProfileInformation(userId)
@@ -104,5 +114,27 @@ class OfferServiceImpl(
         val offerLocation = offer.author.location ?: throw MainException("Location not found")
         val distance = locationService.calculateDistance(offerLocation.latitude, offerLocation.longitude, currentLocation.latitude, currentLocation.longitude)
         return distance <= radius
+    }
+
+    override fun filterForCategories(offerList: List<Offer>, categories: String?): List<Offer> {
+        var updatedList = offerList
+        if (!categories.isNullOrEmpty()) {
+            val category: List<OfferCategory> = categories.split(",").map { enumValueOf(it) }
+            if (category.isNotEmpty()) {
+                updatedList = offerList.filter { category.contains(it.category) }
+            }
+        }
+        return updatedList
+    }
+
+    override fun filterForPriceTypes(offerList: List<Offer>, types: String?): List<Offer> {
+        var updatedList = offerList
+        if (!types.isNullOrEmpty()) {
+            val type: List<PriceType> = types.split(",").map { enumValueOf(it) }
+            if (type.isNotEmpty()) {
+                updatedList = offerList.filter { type.contains(it.priceType) }
+            }
+        }
+        return updatedList
     }
 }
