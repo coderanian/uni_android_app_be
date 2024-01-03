@@ -3,20 +3,22 @@ package de.patternframeworks.busash.auth.service
 import de.patternframeworks.busash.user.persistance.User
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.OffsetDateTime
 import java.util.*
 
 @Service
-class JwtTokenServiceImpl(): JwtTokenService {
+class JwtTokenServiceImpl(@Value("jwt.secret") private val secret: String): JwtTokenService {
     override fun generateToken(userId: Long): String {
         val subject = userId.toString()
-        val expiration = Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000) // 1 day
+        val expiration = OffsetDateTime.now().plusDays(7)
 
         return Jwts.builder()
             .setSubject(subject)
             .setIssuedAt(Date())
-            .setExpiration(expiration)
-            .signWith(SignatureAlgorithm.HS512, "secret")
+            .setExpiration(Date.from(expiration.toInstant()))
+            .signWith(SignatureAlgorithm.HS512, secret)
             .compact()
     }
 
@@ -28,7 +30,7 @@ class JwtTokenServiceImpl(): JwtTokenService {
     }
 
     override fun getUserIdFromToken(token: String): Long {
-        val userid = Jwts.parser().setSigningKey("secret").parseClaimsJws(token).body.subject
+        val userid = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).body.subject
         return userid.toLong()
     }
 
@@ -37,7 +39,7 @@ class JwtTokenServiceImpl(): JwtTokenService {
     }
 
     override fun getExpirationDateFromToken(token: String): Date {
-        return Jwts.parser().setSigningKey("secret").parseClaimsJws(token).body.expiration
+        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).body.expiration
     }
 
     override fun getUserIdFromHeader(token: String): Long {
