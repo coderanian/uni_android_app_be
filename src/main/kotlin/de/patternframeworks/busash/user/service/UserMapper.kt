@@ -16,5 +16,6 @@ interface UserMapper {
     @Mapping(target = "offersCount", expression = "java(user.getOffers().size())")
     fun userToProfileDto(user: User): ProfileDto
 
+    @Mapping(target = "offersCount", expression = "java(user.getOffers().size())")
     fun userToAuthorDto(user: User): AuthorDto
 }
