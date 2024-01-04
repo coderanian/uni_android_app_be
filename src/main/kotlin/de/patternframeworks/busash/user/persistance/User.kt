@@ -23,5 +23,5 @@ data class User(
         @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
         @JsonIgnore
         var offers: List<Offer>? = null,
-        @OneToMany(mappedBy = "reserved") val reservations: List<Reservation>
+        @OneToMany(mappedBy = "reserved") val reservations: List<Reservation>? = null
 )

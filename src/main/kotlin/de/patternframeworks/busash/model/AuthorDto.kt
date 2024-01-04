@@ -5,5 +5,6 @@ class AuthorDto(
     val name: String,
     val email: String,
     val picture: String?,
-    val transactions: Int
+    val transactions: Int,
+    val offersCount: Int
 )

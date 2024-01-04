@@ -1,46 +1,29 @@
 package de.patternframeworks.busash.user.web
 
-import de.patternframeworks.busash.location.persistance.Location
-import de.patternframeworks.busash.location.persistance.LocationRepository
-import de.patternframeworks.busash.user.persistance.User
-import de.patternframeworks.busash.user.persistance.UserRepository
-import org.springframework.http.HttpStatus
+import de.patternframeworks.busash.auth.service.JwtTokenService
+import de.patternframeworks.busash.model.ProfileDto
+import de.patternframeworks.busash.user.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/profile")
 class UserController(
-        private val userRepository: UserRepository,
-        private val locationRepository: LocationRepository
+        private val userService: UserService,
+        private val jwtTokenService: JwtTokenService
 ) {
     @GetMapping("")
-    fun getAllUsers(): List<User> =
-            userRepository.findAll().toList()
-
-    @GetMapping("/{id}")
-    fun getUserById(@PathVariable("id") userId: Long): ResponseEntity<User> {
-        val user = userRepository.findById(userId).orElse(null)
-        return if (user != null) ResponseEntity(user, HttpStatus.OK)
-        else ResponseEntity(HttpStatus.NOT_FOUND)
+    fun getUserInformation(@RequestHeader(name = "Authorization") header: String): ResponseEntity<ProfileDto> {
+        val userId = jwtTokenService.getUserIdFromHeader(header)
+        return ResponseEntity.ok(userService.getProfileInformation(userId))
     }
 
-    @PostMapping("")
-    fun createUser(@RequestBody user: User): ResponseEntity<User> {
-        val createdUser = userRepository.save(user)
-        return ResponseEntity(createdUser, HttpStatus.CREATED)
+    @PutMapping("")
+    fun updateUserInformation(
+        @RequestHeader(name = "Authorization") header: String,
+        @RequestBody user: ProfileDto
+    ): ResponseEntity<ProfileDto> {
+        val userId = jwtTokenService.getUserIdFromHeader(header)
+        return ResponseEntity.ok(userService.updateProfile(userId, user))
     }
-
-
-    @PutMapping("/{id}/location")
-    fun updateUserLocationById(@PathVariable("id") userId: Long, @RequestBody location: Location): ResponseEntity<User> {
-        val updatedLocation = locationRepository.save(location)
-        val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        val updatedUser = existingUser.copy(
-                location = updatedLocation
-        )
-        userRepository.save(updatedUser)
-        return ResponseEntity(updatedUser, HttpStatus.OK)
-    }
-
 }

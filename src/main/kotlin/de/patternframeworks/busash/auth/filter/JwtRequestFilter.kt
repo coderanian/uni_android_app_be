@@ -1,4 +1,4 @@
-package de.patternframeworks.busash.auth.web
+package de.patternframeworks.busash.auth.filter
 
 import de.patternframeworks.busash.auth.service.JwtTokenService
 import de.patternframeworks.busash.error.MainException
