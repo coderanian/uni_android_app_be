@@ -1,4 +1,4 @@
-package de.patternframeworks.busash.location
+package de.patternframeworks.busash.location.persistance
 
 import javax.persistence.*
 

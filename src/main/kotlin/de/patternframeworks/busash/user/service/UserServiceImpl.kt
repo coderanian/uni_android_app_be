@@ -1,7 +1,7 @@
 package de.patternframeworks.busash.user.service
 
-import de.patternframeworks.busash.dtos.RegisterDto
-import de.patternframeworks.busash.offer.OfferRepository
+import de.patternframeworks.busash.model.RegisterDto
+import de.patternframeworks.busash.offer.persistance.OfferRepository
 import de.patternframeworks.busash.user.persistance.User
 import de.patternframeworks.busash.user.persistance.UserRepository
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -45,7 +45,4 @@ class UserServiceImpl(
         println("Transactions updated successfully.")
     }
 
-    override fun getOfferCntByUser(userId: Long): Long {
-        return offerRepository.countByAuthorId(userId)
-    }
 }

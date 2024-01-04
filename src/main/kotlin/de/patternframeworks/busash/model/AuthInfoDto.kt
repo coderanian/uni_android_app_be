@@ -1,4 +1,4 @@
-package de.patternframeworks.busash.dtos
+package de.patternframeworks.busash.model
 
 data class AuthInfoDto(
     val id : Long,

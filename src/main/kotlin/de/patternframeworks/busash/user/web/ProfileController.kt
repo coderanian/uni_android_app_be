@@ -1,13 +1,11 @@
 package de.patternframeworks.busash.user.web
 
 import de.patternframeworks.busash.auth.service.JwtTokenService
+import de.patternframeworks.busash.model.ProfileDto
 import de.patternframeworks.busash.error.MainException
-import de.patternframeworks.busash.location.LocationRepository
-import de.patternframeworks.busash.offer.OfferRepository
-import de.patternframeworks.busash.user.persistance.User
+import de.patternframeworks.busash.location.persistance.LocationRepository
 import de.patternframeworks.busash.user.persistance.UserRepository
-import de.patternframeworks.busash.user.service.UserService
-import org.springframework.beans.factory.annotation.Autowired
+import de.patternframeworks.busash.user.service.UserMapper
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -15,24 +13,17 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/my-profile")
 class ProfileController(
-        @Autowired private val userRepository: UserRepository,
-        private val jwtTokenService: JwtTokenService,
-        private val locationRepository: LocationRepository,
-        private val offerRepository: OfferRepository,
-        private val userService: UserService
+    private val userRepository: UserRepository,
+    private val jwtTokenService: JwtTokenService,
+    private val locationRepository: LocationRepository,
+    private val userMapper: UserMapper
 ) {
 
     @GetMapping("")
     fun getUserInformation(@RequestHeader(name = "Authorization") header: String): ResponseEntity<Any> {
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
-        val offerCnt = userService.getOfferCntByUser(userId)
-        val user = userRepository.findById(userId)
-        val response = mapOf(
-            "user" to user,
-            "offerCnt" to offerCnt
-        )
-        return ResponseEntity(response, HttpStatus.OK)
+        val userId = jwtTokenService.getUserIdFromHeader(header)
+        val profile = userMapper.userToProfileDto(userRepository.findById(userId).orElse(null))
+        return ResponseEntity(profile, HttpStatus.OK)
     }
 
     /**
@@ -49,10 +40,9 @@ class ProfileController(
     @PutMapping("")
     fun updateUserInformation(
             @RequestHeader(name = "Authorization") header: String,
-            @RequestBody user: User
+            @RequestBody user: ProfileDto
     ): ResponseEntity<Any> {
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
+        val userId = jwtTokenService.getUserIdFromHeader(header)
         val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         //Prevent email from being not unique
         if (user.email != existingUser.email) {
@@ -69,26 +59,11 @@ class ProfileController(
                 name = user.name,
                 email = user.email,
                 picture = user.picture ?: existingUser.picture, //WHY IS IT RESET IF NOT PROVIDED IN PUT?
-                password = user.password,
+                password = user.newPassword ?: existingUser.password,
                 location = updatedLocation ?: existingUser.location
 
         )
         userRepository.save(updatedUser)
         return ResponseEntity(updatedUser, HttpStatus.OK)
-    }
-
-    /**
-     * Simple invocation via token for countByAuthorId function in OfferController.kt
-     * @author Konstantin K.
-     * @param header token in the authorization
-     * @return number of rows in offer table for token bearer
-     */
-    @GetMapping("/offer-count")
-    fun getUserOffersCnt(
-        @RequestHeader(name = "Authorization") header: String
-    ): Long {
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
-        return offerRepository.countByAuthorId(userId)
     }
 }

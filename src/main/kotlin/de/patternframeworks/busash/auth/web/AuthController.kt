@@ -1,7 +1,7 @@
 package de.patternframeworks.busash.auth.web
 
 import de.patternframeworks.busash.auth.service.AuthenticationService
-import de.patternframeworks.busash.dtos.*
+import de.patternframeworks.busash.model.*
 import de.patternframeworks.busash.error.MainException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

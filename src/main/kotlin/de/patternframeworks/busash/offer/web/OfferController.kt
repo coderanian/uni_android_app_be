@@ -1,21 +1,27 @@
-package de.patternframeworks.busash.offer
+package de.patternframeworks.busash.offer.web
 
-import de.patternframeworks.busash.auth.service.JwtTokenServiceImpl
+import de.patternframeworks.busash.auth.service.JwtTokenService
+import de.patternframeworks.busash.model.MyOfferDto
+import de.patternframeworks.busash.model.OfferDto
+import de.patternframeworks.busash.offer.persistance.Offer
+import de.patternframeworks.busash.offer.persistance.OfferRepository
+import de.patternframeworks.busash.offer.service.OfferMapper
+import de.patternframeworks.busash.offer.service.OfferService
 import de.patternframeworks.busash.user.persistance.UserRepository
 import de.patternframeworks.busash.user.service.UserService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/api/offers")
 class OfferController(
-        @Autowired private val offerRepository: OfferRepository,
-        private val jwtTokenService: JwtTokenServiceImpl,
-        private val userRepository: UserRepository,
-        private val userService: UserService
+    private val offerRepository: OfferRepository,
+    private val jwtTokenService: JwtTokenService,
+    private val userRepository: UserRepository,
+    private val userService: UserService,
+    private val offerMapper: OfferMapper,
+    private val offerService: OfferService
 ) {
     /**
      * Endpoint to retrieve all offers EXCLUDING offers of authentificated user or RESERVED
@@ -26,11 +32,10 @@ class OfferController(
     @GetMapping("")
     fun getAllOffers(
         @RequestHeader(name = "Authorization") header: String
-    ): List<Offer>{
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
+    ): List<OfferDto>{
+        val userId = jwtTokenService.getUserIdFromHeader(header)
         val allOffers = offerRepository.findAll().toList()
-        return allOffers.filter { it.author?.id != userId && it.reservedBy == null}
+        return allOffers.filter { it.author.id != userId}.filter { !offerService.isOfferReserved(it) }.map { offerMapper.offerToOfferDto(it) }
     }
     /**
      * Endpoint to retrieve all offers of authentificated user
@@ -41,15 +46,17 @@ class OfferController(
     @GetMapping("/my-offers")
     fun getAllMyOffers(
         @RequestHeader(name = "Authorization") header: String
-    ): ResponseEntity<List<Offer>>{
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
+    ): ResponseEntity<List<MyOfferDto>>{
+        val userId = jwtTokenService.getUserIdFromHeader(header)
         val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         //Prevent user to create offers if no location has been set in the profile
         if(existingUser.location == null){
             return ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
-        val myOffers = offerRepository.findAllByAuthorId(userId)
+        val myOffers = offerRepository.findAllByAuthorId(userId).toList().map {
+            offerMapper.offerToMyOfferDto(it, offerService.getReservationEndpoint(it))
+        }
+      //  System.out.println(myOffers.get(0).reservations.last().reservationTimestamp)
         return ResponseEntity(myOffers, HttpStatus.OK)
     }
 
@@ -64,24 +71,9 @@ class OfferController(
         @PathVariable userId: Long,
     ): List<Offer>{
         val userOffers = offerRepository.findAllByAuthorId(userId)
-        return userOffers.filter { it.reservedBy == null }
-    }
-
-    /**
-     * Endpoint to retrieve all reserved offers of authenticated user
-     * @param header Authorization header containing the user token
-     * @return List of offers
-     * @author Konstantin K.
-     */
-    @GetMapping("/my-reservations")
-    fun getAllReservedOffers(
-        @RequestHeader(name = "Authorization") header: String
-    ): ResponseEntity<List<Offer>>{
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
-        val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        val myReservations = offerRepository.findAllByReservedBy(existingUser)
-        return ResponseEntity(myReservations, HttpStatus.OK)
+        // TODO: Reservierte Elemente rausfiltern
+        // return userOffers.filter { it.reservedBy == null }
+        return userOffers.filter { !offerService.isOfferReserved(it) }
     }
 
     /**
@@ -96,8 +88,7 @@ class OfferController(
         @RequestHeader(name = "Authorization") header: String,
         @RequestBody offer: Offer
     ): ResponseEntity<Offer> {
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
+        val userId = jwtTokenService.getUserIdFromHeader(header)
         val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         //Extend offer properties from input fields with author_id
         val offerWithUser = offer.copy(author = existingUser)
@@ -133,8 +124,7 @@ class OfferController(
         @PathVariable id: Long,
         @RequestBody offer: Offer
     ): ResponseEntity<Any> {
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
+        val userId = jwtTokenService.getUserIdFromHeader(header)
         val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         val existingOffer = offerRepository.findById(id).orElse(null)
         //Ensure that user can only update their own offers
@@ -167,8 +157,7 @@ class OfferController(
         @PathVariable id: Long,
         @RequestParam sold: Boolean
     ): ResponseEntity<Any> {
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
+        val userId = jwtTokenService.getUserIdFromHeader(header)
         val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         val offer = offerRepository.findById(id).orElse(null)
         //Ensure that user can only delete their own offers
@@ -176,66 +165,12 @@ class OfferController(
             return ResponseEntity(HttpStatus.NOT_FOUND)
         }
         //Increment transactions counter of a user if item is sold, otherwise simply delete
-        if(sold) {
+        if (sold) {
             userService.updateTransactionsCnt(existingUser)
         }
         offerRepository.deleteById(id)
         return ResponseEntity("Offer deleted", HttpStatus.OK)
     }
 
-    /**
-     * Endpoint to reserve offer
-     * @param header Authorization header containing the user token
-     * @param id offer id as path variable in URL
-     * @return server response and HTTP status code
-     * @author Konstantin K.
-     */
-    @PutMapping("/{id}/reserve")
-    fun reserveOffer(
-        @RequestHeader(name = "Authorization") header: String,
-        @PathVariable id: Long,
-    ): ResponseEntity<Any> {
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
-        val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        val offer = offerRepository.findById(id).orElse(null)
-        //Don't allow to reserve your own items or items already reserved by a user
-        if (offer == null || offer.reservedBy != null || offer.author == existingUser) {
-            return ResponseEntity(HttpStatus.NOT_FOUND)
-        }
-        val updatedOffer = offer.copy(
-                reservedBy = existingUser,
-                reservationTime = LocalDateTime.now()
-        )
-        offerRepository.save(updatedOffer)
-        return ResponseEntity(updatedOffer, HttpStatus.OK)
-    }
 
-    /**
-     * Endpoint to unreserve offer
-     * @param header Authorization header containing the user token
-     * @param id offer id as path variable in URL
-     * @return server response and HTTP status code
-     * @author Konstantin K.
-     */
-    @PutMapping("/{id}/unreserve")
-    fun unreserveOffer(
-            @RequestHeader(name = "Authorization") header: String,
-            @PathVariable id: Long,
-    ): ResponseEntity<Any> {
-        val token = jwtTokenService.extractTokenFromPrefix(header)
-        val userId = jwtTokenService.getUserIdFromToken(token)
-        val existingUser = userRepository.findById(userId).orElse(null) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        val offer = offerRepository.findById(id).orElse(null)
-        //Don't allow to reserve your own items or items already reserved by a user
-        if (offer == null || offer.reservedBy == null || offer.author == existingUser) {
-            return ResponseEntity(HttpStatus.NOT_FOUND)
-        }
-        val updatedOffer = offer.copy(
-                reservedBy = null,
-                reservationTime = null
-        )
-        offerRepository.save(updatedOffer)
-        return ResponseEntity(updatedOffer, HttpStatus.OK)
-    }
 }

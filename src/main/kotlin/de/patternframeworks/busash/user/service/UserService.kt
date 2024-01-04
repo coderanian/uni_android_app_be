@@ -1,6 +1,6 @@
 package de.patternframeworks.busash.user.service
 
-import de.patternframeworks.busash.dtos.RegisterDto
+import de.patternframeworks.busash.model.RegisterDto
 import de.patternframeworks.busash.user.persistance.User
 
 interface UserService {
@@ -9,5 +9,4 @@ interface UserService {
    /* fun findByEmail(email: String): User?*/
     fun comparePassword(pw1: String, pw2: String): Boolean
     fun updateTransactionsCnt(user: User)
-    fun getOfferCntByUser(userId: Long): Long
 }

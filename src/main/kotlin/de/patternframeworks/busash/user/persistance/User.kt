@@ -1,8 +1,9 @@
 package de.patternframeworks.busash.user.persistance
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import de.patternframeworks.busash.location.Location
-import de.patternframeworks.busash.offer.Offer
+import de.patternframeworks.busash.location.persistance.Location
+import de.patternframeworks.busash.offer.persistance.Offer
+import de.patternframeworks.busash.reservation.persistance.Reservation
 import org.hibernate.validator.constraints.Length
 import javax.persistence.*
 
@@ -21,5 +22,6 @@ data class User(
         var location: Location? = null,
         @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
         @JsonIgnore
-        var offers: List<Offer>? = null
+        var offers: List<Offer>? = null,
+        @OneToMany(mappedBy = "reserved") val reservations: List<Reservation>
 )
